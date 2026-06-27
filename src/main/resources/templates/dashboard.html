@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><th:block th:replace="~{layout/base :: head}"></th:block></head>
+<body>
+<th:block th:replace="~{layout/base :: body(content=~{::content}, pageTitle='Dashboard', activePage='dashboard')}">
+    <th:block th:fragment="content">
+
+        <!-- ── İSTATİSTİK KARTLARI ── -->
+        <div class="row g-3 mb-4">
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:52px;height:52px;border-radius:14px;
+                                background:#eff6ff;display:flex;
+                                align-items:center;justify-content:center;">
+                            <i class="bi bi-people fs-4 text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:.05em;">Total Patients</div>
+                            <div class="fw-bold fs-4" th:text="${totalPatients}">0</div>
+                        </div>
+                    </div>
+                    <div class="mt-2 pt-2 border-top">
+                        <a th:href="@{/patients}" class="text-primary text-decoration-none"
+                           style="font-size:0.82rem;">View all →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:52px;height:52px;border-radius:14px;
+                                background:#f0fdf4;display:flex;
+                                align-items:center;justify-content:center;">
+                            <i class="bi bi-person-badge fs-4 text-success"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:.05em;">Total Doctors</div>
+                            <div class="fw-bold fs-4" th:text="${totalDoctors}">0</div>
+                        </div>
+                    </div>
+                    <div class="mt-2 pt-2 border-top">
+                        <a th:href="@{/doctors}" class="text-success text-decoration-none"
+                           style="font-size:0.82rem;">View all →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:52px;height:52px;border-radius:14px;
+                                background:#fefce8;display:flex;
+                                align-items:center;justify-content:center;">
+                            <i class="bi bi-calendar-check fs-4 text-warning"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:.05em;">Today's Appointments</div>
+                            <div class="fw-bold fs-4" th:text="${todayAppointments}">0</div>
+                        </div>
+                    </div>
+                    <div class="mt-2 pt-2 border-top">
+                        <a th:href="@{/appointments}" class="text-warning text-decoration-none"
+                           style="font-size:0.82rem;">View all →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:52px;height:52px;border-radius:14px;
+                                background:#fdf4ff;display:flex;
+                                align-items:center;justify-content:center;">
+                            <i class="bi bi-cash-stack fs-4 text-purple" style="color:#7c3aed;"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:.05em;">Total Revenue</div>
+                            <div class="fw-bold fs-4" th:text="'$' + ${totalRevenue}">$0</div>
+                        </div>
+                    </div>
+                    <div class="mt-2 pt-2 border-top">
+                        <a th:href="@{/billing}" class="text-decoration-none"
+                           style="font-size:0.82rem;color:#7c3aed;">View billing →</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── BUGÜNÜN RANDEVULARI ── -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-calendar-day me-2"></i>Today's Appointments</span>
+                <a th:href="@{/appointments/new}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg"></i> New
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                    <tr>
+                        <th class="ps-4">Time</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Status</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="apt : ${todayList}">
+                        <td class="ps-4 fw-semibold" th:text="${apt.appointmentTime}"></td>
+                        <td th:text="${apt.patient.fullName}"></td>
+                        <td>
+                            <span th:text="${apt.doctor.fullName}"></span>
+                            <small class="text-muted d-block" th:text="${apt.doctor.specialization}"></small>
+                        </td>
+                        <td>
+                        <span th:class="${apt.status.name() == 'SCHEDULED'} ? 'badge bg-primary bg-opacity-10 text-primary' :
+                                         (${apt.status.name() == 'COMPLETED'} ? 'badge bg-success bg-opacity-10 text-success' :
+                                         'badge bg-danger bg-opacity-10 text-danger')"
+                              th:text="${apt.status}">
+                        </span>
+                        </td>
+                        <td class="text-center">
+                            <a th:href="@{/appointments/status/{id}/COMPLETED(id=${apt.id})}"
+                               class="btn btn-sm btn-outline-success me-1">
+                                <i class="bi bi-check"></i>
+                            </a>
+                            <a th:href="@{/appointments/status/{id}/CANCELLED(id=${apt.id})}"
+                               class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-x"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${todayList.isEmpty()}">
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <i class="bi bi-calendar-x d-block fs-2 mb-2"></i>
+                            No appointments today.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </th:block>
+</th:block>
+</body>
+</html>
