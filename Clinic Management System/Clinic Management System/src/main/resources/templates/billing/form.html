@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><th:block th:replace="~{layout/base :: head}"></th:block></head>
+<body>
+<th:block th:replace="~{layout/base :: body(content=~{::content}, pageTitle='New Bill', activePage='billing')}">
+    <th:block th:fragment="content">
+
+        <div class="mb-4">
+            <a th:href="@{/billing}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Billing
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center gap-2">
+                        <i class="bi bi-receipt text-primary"></i>
+                        <span th:text="${bill.id == null} ? 'Create New Bill' : 'Edit Bill'"></span>
+                    </div>
+                    <div class="card-body p-4">
+                        <form th:action="@{/billing/save}" th:object="${bill}" method="post">
+                            <input type="hidden" th:field="*{id}"/>
+
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Appointment <span class="text-danger">*</span></label>
+                                    <select name="appointmentId" class="form-select" required>
+                                        <option value="">Select appointment...</option>
+                                        <option th:each="apt : ${appointments}"
+                                                th:value="${apt.id}"
+                                                th:text="${apt.patient.fullName + ' → ' + apt.doctor.fullName + ' (' + apt.appointmentDate + ')'}"
+                                                th:selected="${bill.appointment != null and bill.appointment.id == apt.id}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Ücret kalemleri -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Consultation Fee ($)</label>
+                                    <input type="number" th:field="*{consultationFee}"
+                                           class="form-control fee-input" step="0.01" min="0" value="0"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Medication Fee ($)</label>
+                                    <input type="number" th:field="*{medicationFee}"
+                                           class="form-control fee-input" step="0.01" min="0" value="0"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Lab Fee ($)</label>
+                                    <input type="number" th:field="*{labFee}"
+                                           class="form-control fee-input" step="0.01" min="0" value="0"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Other Fee ($)</label>
+                                    <input type="number" th:field="*{otherFee}"
+                                           class="form-control fee-input" step="0.01" min="0" value="0"/>
+                                </div>
+
+                                <!-- Toplam — otomatik hesaplanır -->
+                                <div class="col-12">
+                                    <div class="bg-light rounded p-3 d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold">Total Amount</span>
+                                        <span class="fw-bold fs-5 text-primary" id="totalDisplay">$0.00</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Notes</label>
+                                    <textarea th:field="*{notes}" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2 mt-4 pt-3 border-top justify-content-end">
+                                <a th:href="@{/billing}" class="btn btn-outline-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="bi bi-check-lg me-1"></i>
+                                    <span th:text="${bill.id == null} ? 'Create Bill' : 'Update Bill'"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Ücretler değişince toplamı anında hesapla
+            document.querySelectorAll('.fee-input').forEach(input => {
+                input.addEventListener('input', calculateTotal);
+            });
+
+            function calculateTotal() {
+                let total = 0;
+                document.querySelectorAll('.fee-input').forEach(input => {
+                    total += parseFloat(input.value) || 0;
+                });
+                document.getElementById('totalDisplay').textContent = '$' + total.toFixed(2);
+            }
+            calculateTotal();
+        </script>
+
+    </th:block>
+</th:block>
+</body>
+</html>
